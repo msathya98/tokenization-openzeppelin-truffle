@@ -1,29 +1,26 @@
 const Token = artifacts.require("MyToken");
 
-var chai = require("chai");
+const chai = require("./setupchai.js");
 const BN = web3.utils.BN;
-const chaiBN = require("chai-bn")(BN);
-chai.use(chaiBN);
 
-var chaiAsPromised= require("chai-as-promised");
-const { isMainThread } = require("worker_threads");
-const { contracts_build_directory } = require("../truffle-config");
-chai.use(chaiAsPromised);
+const expect = chai.expect;
 
- const expect = chai.expect;
+
+require("dotenv").config({path: "../.env"});
+
  
  contract("Token Test", async(accounts) => {
 
     const [deployerAccount, recipient, anotherAccount] = accounts;
 
     beforeEach(async() => {
-        this.myToken = await Token.new(10000);
+        this.myToken = await Token.new(process.env.INITIAL_TOKENS);
     })
 
     it("all tokens shold be in my account", async() => {
         let instance= this.myToken;
         let totalSupply = await instance.totalSupply();
-        expect(await instance.balanceOf(deployerAccount)).to.be.a.bignumber.equal(totalSupply);
+       return  expect(await instance.balanceOf(deployerAccount)).to.be.a.bignumber.equal(totalSupply);
     })
 
  it("is possible to send tokens between accounts", async() => {
@@ -34,7 +31,7 @@ chai.use(chaiAsPromised);
      expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(totalSupply);
      expect(instance.transfer(recipient, sendTokens)).to.eventually.be.fulfilled;
      expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(totalSupply.sub(new BN(sendTokens)));
-     expect(instance.balanceOf(recipient)).to.eventually.be.a.bignumber.equal(new BN(sendTokens));
+     return expect(instance.balanceOf(recipient)).to.eventually.be.a.bignumber.equal(new BN(sendTokens));
  });
 
  it("is not possible to send more tokens than total", async() => {
@@ -42,6 +39,7 @@ chai.use(chaiAsPromised);
      let balanceOfDeployer = await instance.balanceOf(deployerAccount);
 
      expect(instance.transfer(recipient, new BN(balanceOfDeployer+1))).to.eventually.be.fulfilled;
-     expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(balanceOfDeployer);
+     return expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(balanceOfDeployer);
  })
  });
+const BN = web3.utils.BN;
